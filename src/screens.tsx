@@ -7,7 +7,7 @@ import {
 import { EventsApi, PEvent, Repeat, nextOccurrence } from './events';
 import { ensureReminderPermission } from './reminders';
 import { Ankh, Card, CountryTag, Kicker, MoonIcon, NavArrows, NdopBand, Sparkle, Starfield, YearWheel } from './components';
-import { ACCENTS, C, EVENT_COLORS, F } from './theme';
+import { ACCENTS, C, EVENT_COLORS, F, lift } from './theme';
 import { LayersApi } from './layers';
 import { ProfileApi } from './profile';
 import { JournalApi, PeopleApi } from './journal';
@@ -183,7 +183,7 @@ function DayCell({ n, label, w, h, nav }: { n: number; label: string | number; w
     <Pressable onPress={() => nav.setSelected(n)} style={{ width: w, height: h, padding: 2 }}>
       <View style={{ flex: 1, backgroundColor: bg, borderRadius: 9, padding: 5, borderWidth: isSel ? 2 : isToday ? 1.2 : 0, borderColor: isSel ? acc : C.goldLt, overflow: 'hidden' }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontFamily: special ? F.displayB : F.display, fontSize: special ? 10 : 18, lineHeight: special ? 12 : 22, color: isToday ? C.night : weekend ? acc : C.white }} numberOfLines={2}>{label}</Text>
+          <Text style={{ fontFamily: special ? F.displayB : F.display, fontSize: special ? 10 : 18, lineHeight: special ? 12 : 22, color: isToday ? C.night : weekend ? lift(acc, 0.5) : C.white }} numberOfLines={2}>{label}</Text>
           {!special && <Text style={{ fontFamily: F.sansM, fontSize: 7.5, color: isToday ? 'rgba(15,18,48,0.7)' : 'rgba(255,255,255,0.62)' }}>{g.d}</Text>}
         </View>
         <View style={{ flex: 1 }} />
@@ -278,7 +278,7 @@ export function MonthScreen({ nav }: { nav: Nav }) {
           </Pressable>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-          <Text style={{ fontFamily: F.displayBlk, color: acc, fontSize: 64, lineHeight: 70 }}>{String(month).padStart(2, '0')}</Text>
+          <Text style={{ fontFamily: F.displayBlk, color: lift(acc, 0.3), fontSize: 64, lineHeight: 70 }}>{String(month).padStart(2, '0')}</Text>
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={{ fontFamily: F.displayB, color: C.white, fontSize: 24, letterSpacing: 1 }}>{MONTHS[month - 1].toUpperCase()}</Text>
             <Text style={{ fontFamily: F.sansL, color: C.goldLt, fontSize: 17 }}>{ey}</Text>
@@ -299,7 +299,7 @@ export function MonthScreen({ nav }: { nav: Nav }) {
         <View style={{ flexDirection: 'row' }}>
           {Array.from({ length: 7 }, (_, k) => {
             const wd = (wd0 + k) % 7;
-            return <Text key={k} style={{ width: cw, textAlign: 'center', fontFamily: F.sansB, fontSize: 10, letterSpacing: 1, color: wd === 0 || wd === 6 ? acc : 'rgba(255,255,255,0.62)' }}>{WEEKDAYS[wd].slice(0, 3).toUpperCase()}</Text>;
+            return <Text key={k} style={{ width: cw, textAlign: 'center', fontFamily: F.sansB, fontSize: 10, letterSpacing: 1, color: wd === 0 || wd === 6 ? lift(acc, 0.5) : 'rgba(255,255,255,0.62)' }}>{WEEKDAYS[wd].slice(0, 3).toUpperCase()}</Text>;
           })}
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
@@ -340,7 +340,7 @@ export function YearScreen({ nav }: { nav: Nav }) {
                   const n = s + d, isT = n === nav.today, h = hols.has(n), full = moons.get(n) === 'full';
                   return (
                     <View key={d} style={{ width: cw, height: cw, alignItems: 'center', justifyContent: 'center' }}>
-                      <View style={{ width: cw - 3, height: cw - 3, borderRadius: cw, alignItems: 'center', justifyContent: 'center', backgroundColor: isT ? C.gold : h ? 'rgba(217,164,65,0.22)' : 'transparent' }}>
+                      <View style={{ width: cw - 3, height: cw - 3, borderRadius: cw, alignItems: 'center', justifyContent: 'center', backgroundColor: isT ? C.gold : 'transparent', borderWidth: h && !isT ? 1.4 : 0, borderColor: C.gold }}>
                         <Text style={{ fontFamily: F.sansM, fontSize: cw * 0.4, color: isT ? C.night : C.white }}>{d + 1}</Text>
                       </View>
                       {full && <View style={{ position: 'absolute', top: 1, right: 2, width: 4, height: 4, borderRadius: 2, backgroundColor: C.gold }} />}
@@ -405,14 +405,14 @@ export function ConvertScreen({ nav }: { nav: Nav }) {
       <Kicker>Converter</Kicker>
       <Text style={[T.h1, { marginTop: 4, marginBottom: 14 }]}>Between two calendars</Text>
       <Card>
-        <Text style={[T.label, { color: C.white }]}>Gregorian → Ptah Kamgou</Text>
+        <Text style={T.label}>Gregorian → Ptah Kamgou</Text>
         <View style={{ flexDirection: 'row', marginTop: 12 }}>
           <Field label="Day" value={gd} onChange={setGd} /><Field label="Month" value={gm} onChange={setGm} /><Field label="Year" value={gy} onChange={setGy} w={84} />
         </View>
         {gRes ? <Result big={pkStr(toPK(gRes.n))} sub={`${pkShort(toPK(gRes.n))} · ${gfmt(gRes.n, true)}`} n={gRes.n} /> : <Text style={[T.small, { marginTop: 12 }]}>Enter a valid date</Text>}
       </Card>
       <Card style={{ marginTop: 14 }}>
-        <Text style={[T.label, { color: C.white }]}>Ptah Kamgou → Gregorian</Text>
+        <Text style={T.label}>Ptah Kamgou → Gregorian</Text>
         <View style={{ flexDirection: 'row', marginTop: 12 }}>
           {!special && <Field label="Day" value={pd} onChange={setPd} />}
           <Field label="Year" value={py} onChange={setPy} w={84} />
@@ -494,7 +494,7 @@ export function EventsScreen({ nav }: { nav: Nav }) {
       <Kicker>Your events</Kicker>
       <Text style={[T.h1, { marginTop: 4, marginBottom: 14 }]}>Plan your year</Text>
       <Card>
-        <Text style={[T.label, { color: C.white }]}>{editing ? 'Edit event' : 'New event'}</Text>
+        <Text style={T.label}>{editing ? 'Edit event' : 'New event'}</Text>
         <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Digital electronics exam" placeholderTextColor={'rgba(255,255,255,0.62)'} onSubmitEditing={submit} maxLength={120}
           style={{ marginTop: 10, backgroundColor: C.night3, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sansM, fontSize: 15, color: C.white }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>

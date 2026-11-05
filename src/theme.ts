@@ -33,3 +33,10 @@ export const F = {
   sansB: 'DMSans_700Bold',
   sansL: 'DMSans_300Light',
 };
+
+/** Blend a hex colour toward white (keeps month accents readable on the dark theme). */
+export function lift(hex: string, amt = 0.4) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = (v: number) => Math.round(v + (255 - v) * amt);
+  return `rgb(${ch((n >> 16) & 255)},${ch((n >> 8) & 255)},${ch(n & 255)})`;
+}
