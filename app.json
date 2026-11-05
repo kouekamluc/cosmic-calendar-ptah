@@ -33,6 +33,12 @@
           "backgroundColor": "#0F1230"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6a9b6d34-e10b-42ea-8229-6e9aa68f6361"
+      }
+    },
+    "owner": "kouekams-team"
   }
 }
