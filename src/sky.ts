@@ -203,7 +203,7 @@ export function skyEventsFor(ey: number): SkyEvent[] {
   // equinoxes & solstices
   for (const y of [g0, g0 + 1]) for (const s of seasonsOf(y)) {
     const n = dayOfMs(s.d.getTime());
-    if (n >= first && n <= last) out.push({ n, kind: 'season', icon: '☉FE0E', title: s.key, detail: `${hhmm(s.d)} (UTC+1)` });
+    if (n >= first && n <= last) out.push({ n, kind: 'season', icon: '☉︎', title: s.key, detail: `${hhmm(s.d)} (UTC+1)` });
   }
   // eclipses
   const t0 = new Date(first * 864e5), t1 = last * 864e5 + 864e5;
