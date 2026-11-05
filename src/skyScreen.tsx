@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { eraYearOf, gfmt, pkShort, pkStr, toPK, ERA_OFFSET } from './engine';
 import { Card, Kicker, NavArrows, Starfield } from './components';
@@ -6,6 +6,7 @@ import { LayerKey, Layers } from './layers';
 import { chineseDay, glyph, seasonsOf, SIGNS, skyDay, sunSpans, upcomingSkyEvents, vedicDay } from './sky';
 import type { Nav } from './screens';
 import { ACCENTS, C, F } from './theme';
+import { MyChart } from './chartScreen';
 
 const dim = 'rgba(255,255,255,0.62)';
 
@@ -78,7 +79,7 @@ export function ZodiacStrip({ start, width }: { start: number; width: number }) 
 
 const LAYER_LABEL: Record<LayerKey, string> = { western: 'Western', chinese: 'Chinese', vedic: 'Vedic' };
 
-export function SkyScreen({ nav }: { nav: Nav }) {
+function SkyDaily({ nav }: { nav: Nav }) {
   const { width } = useWindowDimensions();
   const n = nav.selected, p = toPK(n), ey = eraYearOf(n);
   const L = nav.layers.layers;
@@ -160,5 +161,21 @@ export function SkyScreen({ nav }: { nav: Nav }) {
         </Text>
       </View>
     </ScrollView>
+  );
+}
+
+export function SkyScreen({ nav }: { nav: Nav }) {
+  const [mode, setMode] = useState<'sky' | 'me'>('sky');
+  return (
+    <View style={{ flex: 1, backgroundColor: C.night }}>
+      <View style={{ flexDirection: 'row', marginHorizontal: 20, marginTop: 12, backgroundColor: C.night2, borderRadius: 18, padding: 3 }}>
+        {([['sky', "Today's sky"], ['me', 'My chart']] as const).map(([k, label]) => (
+          <Pressable key={k} onPress={() => setMode(k)} style={{ flex: 1, paddingVertical: 8, borderRadius: 15, alignItems: 'center', backgroundColor: mode === k ? C.gold : 'transparent' }}>
+            <Text style={{ fontFamily: F.sansB, fontSize: 12, color: mode === k ? C.night : dim }}>{label}</Text>
+          </Pressable>
+        ))}
+      </View>
+      {mode === 'sky' ? <SkyDaily nav={nav} /> : <MyChart nav={nav} />}
+    </View>
   );
 }

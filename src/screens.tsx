@@ -9,6 +9,7 @@ import { ensureReminderPermission } from './reminders';
 import { Ankh, Card, CountryTag, Kicker, MoonIcon, NavArrows, NdopBand, Sparkle, Starfield, YearWheel } from './components';
 import { ACCENTS, C, EVENT_COLORS, F } from './theme';
 import { LayersApi } from './layers';
+import { ProfileApi } from './profile';
 import { SkyBrief, ZodiacStrip } from './skyScreen';
 import { vedicDay } from './sky';
 
@@ -21,6 +22,7 @@ export type Nav = {
   go: (tab: Tab) => void;
   events: EventsApi;
   layers: LayersApi;
+  profile: ProfileApi;
 };
 export type Tab = 'today' | 'month' | 'year' | 'convert' | 'events' | 'sky';
 

@@ -156,11 +156,14 @@ export const ayanamsa = (n: number) => 23.853 + ((n - dn(2000, 1, 1)) / 365.25) 
 export type VedicDay = { tithi: number; tithiName: string; paksha: 'Shukla' | 'Krishna'; nakshatra: string; pada: number; siderealMoon: string };
 export function vedicDay(n: number): VedicDay {
   const d = skyDay(n);
-  const t = Math.floor(norm(d.moonLon - d.sunLon) / 12); // 0..29
+  return vedicFrom(d.sunLon, d.moonLon, n);
+}
+export function vedicFrom(sun: number, moon: number, n: number): VedicDay {
+  const t = Math.floor(norm(moon - sun) / 12); // 0..29
   const paksha = t < 15 ? 'Shukla' : 'Krishna';
   const k = t % 15;
   const tithiName = k === 14 ? (paksha === 'Shukla' ? 'Purnima' : 'Amavasya') : TITHIS[k];
-  const sid = norm(d.moonLon - ayanamsa(n));
+  const sid = norm(moon - ayanamsa(n));
   const w = 360 / 27;
   const ni = Math.floor(sid / w);
   return {
