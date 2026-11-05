@@ -66,10 +66,10 @@ export function ZodiacStrip({ start, width }: { start: number; width: number }) 
   const u = width / 28;
   return (
     <View style={{ marginTop: 14 }}>
-      <Text style={{ fontFamily: F.sansB, color: C.muted, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 6 }}>Sun in the zodiac</Text>
+      <Text style={{ fontFamily: F.sansB, color: C.goldLt, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 6 }}>Sun in the zodiac</Text>
       <View style={{ flexDirection: 'row', width, height: 34, borderRadius: 8, overflow: 'hidden' }}>
         {spans.map(s => (
-          <View key={s.from} style={{ width: s.days * u, backgroundColor: ACCENTS[s.sign], justifyContent: 'center', alignItems: 'center', borderRightWidth: 1, borderRightColor: C.paper }}>
+          <View key={s.from} style={{ width: s.days * u, backgroundColor: ACCENTS[s.sign], justifyContent: 'center', alignItems: 'center', borderRightWidth: 1, borderRightColor: C.night }}>
             <Text numberOfLines={1} style={{ fontFamily: F.sansB, color: '#fff', fontSize: s.days >= 5 ? 11 : 15 }}>
               {glyph(s.sign)}{s.days >= 7 ? ' ' + SIGNS[s.sign].name : ''}
             </Text>

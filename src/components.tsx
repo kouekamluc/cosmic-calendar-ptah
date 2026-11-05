@@ -151,12 +151,12 @@ export function CountryTag({ who }: { who: string }) {
 }
 
 export function Card({ children, style, dark }: { children: React.ReactNode; style?: ViewStyle; dark?: boolean }) {
-  return <View style={[{ backgroundColor: dark ? C.night : C.card, borderRadius: 14, padding: 16 }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: dark ? C.night : C.night2, borderRadius: 14, padding: 16 }, style]}>{children}</View>;
 }
 
-export function NavArrows({ label, sub, onPrev, onNext, color = C.ink, subColor = C.muted }: { label: string; sub?: string; onPrev: () => void; onNext: () => void; color?: string; subColor?: string }) {
+export function NavArrows({ label, sub, onPrev, onNext, color = C.white, subColor = 'rgba(255,255,255,0.62)' }: { label: string; sub?: string; onPrev: () => void; onNext: () => void; color?: string; subColor?: string }) {
   const btn = (t: string, f: () => void) => (
-    <Pressable onPress={f} hitSlop={12} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(127,127,127,0.12)' })}>
+    <Pressable onPress={f} hitSlop={12} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: C.night3 })}>
       <Text style={{ color, fontFamily: F.sansB, fontSize: 18 }}>{t}</Text>
     </Pressable>
   );

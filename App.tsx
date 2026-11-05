@@ -106,11 +106,10 @@ function Main() {
     return () => sub.remove();
   }, [tab]);
   const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events, layers, profile, journal, people, alerts };
-  const dark = tab === 'today' || tab === 'sky';
   return (
-    <View style={{ flex: 1, backgroundColor: dark ? C.night : C.paper }}>
-      <StatusBar style={dark || tab === 'month' ? 'light' : 'dark'} />
-      <View style={{ height: insets.top, backgroundColor: dark || tab === 'month' ? C.night : C.paper }} />
+    <View style={{ flex: 1, backgroundColor: C.night }}>
+      <StatusBar style="light" />
+      <View style={{ height: insets.top, backgroundColor: C.night }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {tab === 'today' && <TodayScreen nav={nav} />}
         {tab === 'month' && <MonthScreen nav={nav} />}

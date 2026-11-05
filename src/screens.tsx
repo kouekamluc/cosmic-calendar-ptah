@@ -33,10 +33,10 @@ export type Nav = {
 export type Tab = 'today' | 'month' | 'year' | 'convert' | 'events' | 'sky';
 
 const T = StyleSheet.create({
-  h1: { fontFamily: F.displayB, color: C.ink, fontSize: 26 },
-  body: { fontFamily: F.sans, color: C.ink, fontSize: 14 },
-  small: { fontFamily: F.sans, color: C.muted, fontSize: 12 },
-  label: { fontFamily: F.sansB, color: C.muted, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase' },
+  h1: { fontFamily: F.displayB, color: C.white, fontSize: 26 },
+  body: { fontFamily: F.sans, color: C.white, fontSize: 14 },
+  small: { fontFamily: F.sans, color: 'rgba(255,255,255,0.62)', fontSize: 12 },
+  label: { fontFamily: F.sansB, color: C.goldLt, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase' },
 });
 
 function accentOf(n: number) {
@@ -178,13 +178,13 @@ function DayCell({ n, label, w, h, nav }: { n: number; label: string | number; w
   const g = ymd(n), weekend = g.wd === 0 || g.wd === 6;
   const acc = accentOf(n);
   const special = typeof label === 'string';
-  const bg = isToday ? C.night : hol ? C.holi : special ? C.special : C.card;
+  const bg = isToday ? C.gold : hol ? 'rgba(217,164,65,0.22)' : special ? C.night3 : C.night2;
   return (
     <Pressable onPress={() => nav.setSelected(n)} style={{ width: w, height: h, padding: 2 }}>
-      <View style={{ flex: 1, backgroundColor: bg, borderRadius: 9, padding: 5, borderWidth: isSel ? 2 : isToday ? 1.2 : 0, borderColor: isSel ? acc : C.gold, overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: bg, borderRadius: 9, padding: 5, borderWidth: isSel ? 2 : isToday ? 1.2 : 0, borderColor: isSel ? acc : C.goldLt, overflow: 'hidden' }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontFamily: special ? F.displayB : F.display, fontSize: special ? 10 : 18, lineHeight: special ? 12 : 22, color: isToday ? C.gold : weekend ? acc : C.ink }} numberOfLines={2}>{label}</Text>
-          {!special && <Text style={{ fontFamily: F.sansM, fontSize: 7.5, color: isToday ? 'rgba(255,255,255,0.7)' : C.muted }}>{g.d}</Text>}
+          <Text style={{ fontFamily: special ? F.displayB : F.display, fontSize: special ? 10 : 18, lineHeight: special ? 12 : 22, color: isToday ? C.night : weekend ? acc : C.white }} numberOfLines={2}>{label}</Text>
+          {!special && <Text style={{ fontFamily: F.sansM, fontSize: 7.5, color: isToday ? 'rgba(15,18,48,0.7)' : 'rgba(255,255,255,0.62)' }}>{g.d}</Text>}
         </View>
         <View style={{ flex: 1 }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -192,7 +192,7 @@ function DayCell({ n, label, w, h, nav }: { n: number; label: string | number; w
             {hol && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#B8831E' }} />}
             {ev.slice(0, 3).map(e => <View key={e.id} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: e.color }} />)}
           </View>
-          {moon && <MoonIcon phase={moon} r={4} lit={isToday ? C.goldLt : '#F3D98C'} dark={isToday ? C.night : C.ink} outline={isToday ? C.goldLt : C.ink} />}
+          {moon && <MoonIcon phase={moon} r={4} lit={isToday ? C.white : '#F3D98C'} dark={isToday ? 'rgba(15,18,48,0.55)' : C.night} outline={isToday ? C.night : C.goldLt} />}
         </View>
       </View>
     </Pressable>
@@ -209,20 +209,20 @@ function DayDetail({ n, nav }: { n: number; nav: Nav }) {
     <Card style={{ marginTop: 14, borderLeftWidth: 4, borderLeftColor: acc }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: F.displayB, fontSize: 20, color: C.ink }}>{pkStr(p)}</Text>
+          <Text style={{ fontFamily: F.displayB, fontSize: 20, color: C.white }}>{pkStr(p)}</Text>
           <Text style={[T.small, { marginTop: 2 }]}>{gfmt(n, true)} · {pkShort(p)}{n === nav.today ? ' · today' : ''}</Text>
         </View>
-        <Pressable onPress={() => nav.go('events')} style={{ backgroundColor: C.night, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 7 }}>
-          <Text style={{ fontFamily: F.sansB, color: C.gold, fontSize: 12 }}>+ Event</Text>
+        <Pressable onPress={() => nav.go('events')} style={{ backgroundColor: C.gold, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 7 }}>
+          <Text style={{ fontFamily: F.sansB, color: C.night, fontSize: 12 }}>+ Event</Text>
         </Pressable>
       </View>
       {moon && (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-          <MoonIcon phase={moon} r={7} lit="#F3D98C" dark={C.ink} outline={C.ink} />
+          <MoonIcon phase={moon} r={7} lit="#F3D98C" dark={C.night} outline={C.goldLt} />
           <Text style={[T.body, { marginLeft: 8 }]}>{PHASE_NAME[moon]}</Text>
         </View>
       )}
-      <SkyBrief n={n} layers={nav.layers.layers} dark={false} />
+      <SkyBrief n={n} layers={nav.layers.layers} />
       {hol.map((h, i) => (
         <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
           <CountryTag who={h.who} />
@@ -268,7 +268,7 @@ export function MonthScreen({ nav }: { nav: Nav }) {
   const wd0 = ymd(start).wd;
   const a = start, b = start + 27;
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: C.paper }} contentContainerStyle={{ paddingBottom: 28 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: C.night }} contentContainerStyle={{ paddingBottom: 28 }}>
       <View style={{ backgroundColor: C.night, paddingHorizontal: 20, paddingTop: 22, paddingBottom: 18 }}>
         <Starfield w={width} h={220} n={50} seed={ey * 13 + month} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -299,7 +299,7 @@ export function MonthScreen({ nav }: { nav: Nav }) {
         <View style={{ flexDirection: 'row' }}>
           {Array.from({ length: 7 }, (_, k) => {
             const wd = (wd0 + k) % 7;
-            return <Text key={k} style={{ width: cw, textAlign: 'center', fontFamily: F.sansB, fontSize: 10, letterSpacing: 1, color: wd === 0 || wd === 6 ? acc : C.muted }}>{WEEKDAYS[wd].slice(0, 3).toUpperCase()}</Text>;
+            return <Text key={k} style={{ width: cw, textAlign: 'center', fontFamily: F.sansB, fontSize: 10, letterSpacing: 1, color: wd === 0 || wd === 6 ? acc : 'rgba(255,255,255,0.62)' }}>{WEEKDAYS[wd].slice(0, 3).toUpperCase()}</Text>;
           })}
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
@@ -323,14 +323,14 @@ export function YearScreen({ nav }: { nav: Nav }) {
   const cw = (bw - 12) / 7;
   const wd0 = ymd(yearStart(ey)).wd;
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: C.paper }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: C.night }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
       <NavArrows label={`Year ${ey}`} sub={`20 Mar ${ey - ERA_OFFSET} – 19 Mar ${ey - ERA_OFFSET + 1} · ${yearLength(ey)} days`} onPrev={() => setEy(ey - 1)} onNext={() => setEy(ey + 1)} />
       <Text style={[T.small, { textAlign: 'center', marginTop: 6 }]}>Every month starts on a {WEEKDAYS[wd0]}{yearHasLeap(ey) ? ' · Leap year' : ''}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
         {Array.from({ length: 13 }, (_, i) => {
           const s = monthStart(ey, i + 1);
           return (
-            <Pressable key={i} onPress={() => { nav.setView({ ey, month: i + 1 }); nav.setSelected(s); nav.go('month'); }} style={{ width: bw, backgroundColor: C.card, borderRadius: 12, overflow: 'hidden' }}>
+            <Pressable key={i} onPress={() => { nav.setView({ ey, month: i + 1 }); nav.setSelected(s); nav.go('month'); }} style={{ width: bw, backgroundColor: C.night2, borderRadius: 12, overflow: 'hidden' }}>
               <View style={{ backgroundColor: ACCENTS[i], paddingHorizontal: 10, paddingVertical: 7, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={{ fontFamily: F.displayB, color: '#fff', fontSize: 12 }}>{String(i + 1).padStart(2, '0')} {MONTHS[i].toUpperCase()}</Text>
                 <Text style={{ fontFamily: F.sans, color: 'rgba(255,255,255,0.85)', fontSize: 8.5 }}>{gfmt(s, false, false)}</Text>
@@ -340,8 +340,8 @@ export function YearScreen({ nav }: { nav: Nav }) {
                   const n = s + d, isT = n === nav.today, h = hols.has(n), full = moons.get(n) === 'full';
                   return (
                     <View key={d} style={{ width: cw, height: cw, alignItems: 'center', justifyContent: 'center' }}>
-                      <View style={{ width: cw - 3, height: cw - 3, borderRadius: cw, alignItems: 'center', justifyContent: 'center', backgroundColor: isT ? C.night : h ? C.holi : 'transparent' }}>
-                        <Text style={{ fontFamily: F.sansM, fontSize: cw * 0.4, color: isT ? C.goldLt : C.ink }}>{d + 1}</Text>
+                      <View style={{ width: cw - 3, height: cw - 3, borderRadius: cw, alignItems: 'center', justifyContent: 'center', backgroundColor: isT ? C.gold : h ? 'rgba(217,164,65,0.22)' : 'transparent' }}>
+                        <Text style={{ fontFamily: F.sansM, fontSize: cw * 0.4, color: isT ? C.night : C.white }}>{d + 1}</Text>
                       </View>
                       {full && <View style={{ position: 'absolute', top: 1, right: 2, width: 4, height: 4, borderRadius: 2, backgroundColor: C.gold }} />}
                     </View>
@@ -351,7 +351,7 @@ export function YearScreen({ nav }: { nav: Nav }) {
             </Pressable>
           );
         })}
-        <View style={{ width: bw, backgroundColor: C.night, borderRadius: 12, padding: 12, justifyContent: 'center' }}>
+        <View style={{ width: bw, backgroundColor: C.night3, borderRadius: 12, padding: 12, justifyContent: 'center' }}>
           <Kicker style={{ fontSize: 9 }}>Outside the months</Kicker>
           {yearHasLeap(ey) && <Text style={{ fontFamily: F.displayB, color: C.white, fontSize: 14, marginTop: 10 }}>Leap Day <Text style={{ fontFamily: F.sans, fontSize: 11, color: C.goldLt }}>{gfmt(yearEnd(ey) - 1)}</Text></Text>}
           <Text style={{ fontFamily: F.displayB, color: C.white, fontSize: 14, marginTop: 10 }}>Renewal Day <Text style={{ fontFamily: F.sans, fontSize: 11, color: C.goldLt }}>{gfmt(yearEnd(ey))}</Text></Text>
@@ -367,7 +367,7 @@ function Field({ value, onChange, w = 64, label }: { value: string; onChange: (s
     <View style={{ marginRight: 10 }}>
       <Text style={T.label}>{label}</Text>
       <TextInput value={value} onChangeText={s => onChange(s.replace(/[^0-9]/g, ''))} keyboardType="number-pad"
-        style={{ width: w, marginTop: 4, backgroundColor: C.paper, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontFamily: F.sansM, fontSize: 16, color: C.ink }} />
+        style={{ width: w, marginTop: 4, backgroundColor: C.night3, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontFamily: F.sansM, fontSize: 16, color: C.white }} />
     </View>
   );
 }
@@ -401,18 +401,18 @@ export function ConvertScreen({ nav }: { nav: Nav }) {
     </Pressable>
   );
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: C.paper }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={{ flex: 1, backgroundColor: C.night }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Kicker>Converter</Kicker>
       <Text style={[T.h1, { marginTop: 4, marginBottom: 14 }]}>Between two calendars</Text>
       <Card>
-        <Text style={[T.label, { color: C.ink }]}>Gregorian → Ptah Kamgou</Text>
+        <Text style={[T.label, { color: C.white }]}>Gregorian → Ptah Kamgou</Text>
         <View style={{ flexDirection: 'row', marginTop: 12 }}>
           <Field label="Day" value={gd} onChange={setGd} /><Field label="Month" value={gm} onChange={setGm} /><Field label="Year" value={gy} onChange={setGy} w={84} />
         </View>
         {gRes ? <Result big={pkStr(toPK(gRes.n))} sub={`${pkShort(toPK(gRes.n))} · ${gfmt(gRes.n, true)}`} n={gRes.n} /> : <Text style={[T.small, { marginTop: 12 }]}>Enter a valid date</Text>}
       </Card>
       <Card style={{ marginTop: 14 }}>
-        <Text style={[T.label, { color: C.ink }]}>Ptah Kamgou → Gregorian</Text>
+        <Text style={[T.label, { color: C.white }]}>Ptah Kamgou → Gregorian</Text>
         <View style={{ flexDirection: 'row', marginTop: 12 }}>
           {!special && <Field label="Day" value={pd} onChange={setPd} />}
           <Field label="Year" value={py} onChange={setPy} w={84} />
@@ -422,14 +422,14 @@ export function ConvertScreen({ nav }: { nav: Nav }) {
           {MONTHS.map((nm, i) => {
             const on = !special && pm === i + 1;
             return (
-              <Pressable key={nm} onPress={() => { setPm(i + 1); setSpecial(null); }} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 14, backgroundColor: on ? ACCENTS[i] : C.paper }}>
-                <Text style={{ fontFamily: F.sansM, fontSize: 12, color: on ? '#fff' : C.ink }}>{String(i + 1).padStart(2, '0')} {nm.slice(0, 3)}</Text>
+              <Pressable key={nm} onPress={() => { setPm(i + 1); setSpecial(null); }} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 14, backgroundColor: on ? ACCENTS[i] : C.night3 }}>
+                <Text style={{ fontFamily: F.sansM, fontSize: 12, color: on ? '#fff' : C.white }}>{String(i + 1).padStart(2, '0')} {nm.slice(0, 3)}</Text>
               </Pressable>
             );
           })}
           {(['leap', 'renewal'] as const).map(s => (
-            <Pressable key={s} onPress={() => setSpecial(s)} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 14, backgroundColor: special === s ? C.gold : C.paper }}>
-              <Text style={{ fontFamily: F.sansM, fontSize: 12, color: special === s ? C.night : C.ink }}>{s === 'leap' ? 'Leap Day' : 'Renewal Day'}</Text>
+            <Pressable key={s} onPress={() => setSpecial(s)} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 14, backgroundColor: special === s ? C.gold : C.night3 }}>
+              <Text style={{ fontFamily: F.sansM, fontSize: 12, color: special === s ? C.night : C.white }}>{s === 'leap' ? 'Leap Day' : 'Renewal Day'}</Text>
             </Pressable>
           ))}
         </View>
@@ -485,25 +485,25 @@ export function EventsScreen({ nav }: { nav: Nav }) {
     else { Alert.alert('Imported', `${n} event${n === 1 ? '' : 's'} found; ones you already have were skipped.`); setImportText(''); setBackupOpen(false); }
   };
   const chip = (on: boolean, label: string, f: () => void) => (
-    <Pressable key={label} onPress={f} style={{ paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14, backgroundColor: on ? C.night : C.paper, marginRight: 6, marginTop: 6 }}>
-      <Text style={{ fontFamily: F.sansM, fontSize: 12, color: on ? C.gold : C.ink }}>{label}</Text>
+    <Pressable key={label} onPress={f} style={{ paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14, backgroundColor: on ? C.gold : C.night3, marginRight: 6, marginTop: 6 }}>
+      <Text style={{ fontFamily: F.sansM, fontSize: 12, color: on ? C.night : C.white }}>{label}</Text>
     </Pressable>
   );
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: C.paper }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={{ flex: 1, backgroundColor: C.night }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Kicker>Your events</Kicker>
       <Text style={[T.h1, { marginTop: 4, marginBottom: 14 }]}>Plan your year</Text>
       <Card>
-        <Text style={[T.label, { color: C.ink }]}>{editing ? 'Edit event' : 'New event'}</Text>
-        <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Digital electronics exam" placeholderTextColor={C.muted} onSubmitEditing={submit} maxLength={120}
-          style={{ marginTop: 10, backgroundColor: C.paper, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sansM, fontSize: 15, color: C.ink }} />
+        <Text style={[T.label, { color: C.white }]}>{editing ? 'Edit event' : 'New event'}</Text>
+        <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Digital electronics exam" placeholderTextColor={'rgba(255,255,255,0.62)'} onSubmitEditing={submit} maxLength={120}
+          style={{ marginTop: 10, backgroundColor: C.night3, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sansM, fontSize: 15, color: C.white }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-          <Pressable onPress={() => nav.setSelected(date - 1)} hitSlop={8} style={{ padding: 6 }}><Text style={{ fontSize: 20, color: C.ink }}>‹</Text></Pressable>
+          <Pressable onPress={() => nav.setSelected(date - 1)} hitSlop={8} style={{ padding: 6 }}><Text style={{ fontSize: 20, color: C.white }}>‹</Text></Pressable>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.displayB, fontSize: 16, color: C.ink }}>{pkStr(toPK(date))}</Text>
+            <Text style={{ fontFamily: F.displayB, fontSize: 16, color: C.white }}>{pkStr(toPK(date))}</Text>
             <Text style={T.small}>{gfmt(date, true)}</Text>
           </View>
-          <Pressable onPress={() => nav.setSelected(date + 1)} hitSlop={8} style={{ padding: 6 }}><Text style={{ fontSize: 20, color: C.ink }}>›</Text></Pressable>
+          <Pressable onPress={() => nav.setSelected(date + 1)} hitSlop={8} style={{ padding: 6 }}><Text style={{ fontSize: 20, color: C.white }}>›</Text></Pressable>
         </View>
         <Pressable onPress={() => nav.go('month')}><Text style={[T.small, { textAlign: 'center', color: C.gold, fontFamily: F.sansB }]}>pick on calendar</Text></Pressable>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
@@ -516,11 +516,11 @@ export function EventsScreen({ nav }: { nav: Nav }) {
         </View>
         <View style={{ flexDirection: 'row', marginTop: 12, gap: 10 }}>
           {EVENT_COLORS.map(c => (
-            <Pressable key={c} onPress={() => setColor(c)} style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c, borderWidth: color === c ? 3 : 0, borderColor: C.night }} />
+            <Pressable key={c} onPress={() => setColor(c)} style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c, borderWidth: color === c ? 3 : 0, borderColor: C.white }} />
           ))}
         </View>
-        <Pressable onPress={submit} style={({ pressed }) => ({ marginTop: 16, backgroundColor: title.trim() ? C.night : C.rule, borderRadius: 10, paddingVertical: 12, alignItems: 'center', opacity: pressed ? 0.8 : 1 })}>
-          <Text style={{ fontFamily: F.sansB, color: title.trim() ? C.gold : C.muted, fontSize: 14, letterSpacing: 1 }}>{editing ? 'UPDATE EVENT' : 'SAVE EVENT'}</Text>
+        <Pressable onPress={submit} style={({ pressed }) => ({ marginTop: 16, backgroundColor: title.trim() ? C.gold : C.night3, borderRadius: 10, paddingVertical: 12, alignItems: 'center', opacity: pressed ? 0.8 : 1 })}>
+          <Text style={{ fontFamily: F.sansB, color: title.trim() ? C.night : 'rgba(255,255,255,0.62)', fontSize: 14, letterSpacing: 1 }}>{editing ? 'UPDATE EVENT' : 'SAVE EVENT'}</Text>
         </Pressable>
         {editing && (
           <Pressable onPress={reset} style={{ marginTop: 10, alignItems: 'center' }}>
@@ -531,10 +531,10 @@ export function EventsScreen({ nav }: { nav: Nav }) {
       <Text style={[T.label, { marginTop: 22, marginBottom: 8 }]}>Upcoming</Text>
       {list.length === 0 && <Text style={T.small}>No events yet. Exams, work shifts, birthdays — add them above.</Text>}
       {list.map(({ e, next }) => (
-        <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.card, borderRadius: 12, padding: 12, marginBottom: 8, opacity: next === null ? 0.5 : 1, borderWidth: editing === e.id ? 2 : 0, borderColor: C.gold }}>
+        <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.night2, borderRadius: 12, padding: 12, marginBottom: 8, opacity: next === null ? 0.5 : 1, borderWidth: editing === e.id ? 2 : 0, borderColor: C.gold }}>
           <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: e.color, marginRight: 12 }} />
           <Pressable style={{ flex: 1 }} onPress={() => { const d = next ?? e.date; const p = toPK(d); nav.setView({ ey: p.year, month: p.kind === 'day' ? p.month : 13 }); nav.setSelected(d); nav.go('month'); }}>
-            <Text style={{ fontFamily: F.sansB, fontSize: 15, color: C.ink }}>{e.title}{e.remind ? '  🔔' : ''}</Text>
+            <Text style={{ fontFamily: F.sansB, fontSize: 15, color: C.white }}>{e.title}{e.remind ? '  🔔' : ''}</Text>
             <Text style={T.small}>
               {next === null ? `passed · ${pkStr(toPK(e.date))}` : `${pkStr(toPK(next))} · ${gfmt(next, true)}`}
               {e.repeat !== 'none' ? '  ↻' : ''}
@@ -542,10 +542,10 @@ export function EventsScreen({ nav }: { nav: Nav }) {
             </Text>
           </Pressable>
           <Pressable onPress={() => startEdit(e)} hitSlop={10} style={{ padding: 6 }}>
-            <Text style={{ color: C.muted, fontSize: 15 }}>✎</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.62)', fontSize: 15 }}>✎</Text>
           </Pressable>
           <Pressable onPress={() => confirmDelete(e)} hitSlop={10} style={{ padding: 6 }}>
-            <Text style={{ color: C.muted, fontSize: 16 }}>✕</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.62)', fontSize: 16 }}>✕</Text>
           </Pressable>
         </View>
       ))}
@@ -556,13 +556,13 @@ export function EventsScreen({ nav }: { nav: Nav }) {
       {backupOpen && (
         <Card style={{ marginTop: 8 }}>
           <Text style={T.small}>Your events live only on this phone. Export them as text and save it (WhatsApp to yourself, notes, email) to keep a copy.</Text>
-          <Pressable onPress={doExport} disabled={!nav.events.events.length} style={{ marginTop: 12, backgroundColor: nav.events.events.length ? C.night : C.rule, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.sansB, color: nav.events.events.length ? C.gold : C.muted, fontSize: 13, letterSpacing: 1 }}>EXPORT {nav.events.events.length} EVENT{nav.events.events.length === 1 ? '' : 'S'}</Text>
+          <Pressable onPress={doExport} disabled={!nav.events.events.length} style={{ marginTop: 12, backgroundColor: nav.events.events.length ? C.gold : C.night3, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
+            <Text style={{ fontFamily: F.sansB, color: nav.events.events.length ? C.night : 'rgba(255,255,255,0.62)', fontSize: 13, letterSpacing: 1 }}>EXPORT {nav.events.events.length} EVENT{nav.events.events.length === 1 ? '' : 'S'}</Text>
           </Pressable>
-          <TextInput value={importText} onChangeText={setImportText} placeholder="Paste a backup here to restore it" placeholderTextColor={C.muted} multiline
-            style={{ marginTop: 14, backgroundColor: C.paper, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sans, fontSize: 12, color: C.ink, minHeight: 70, textAlignVertical: 'top' }} />
-          <Pressable onPress={doImport} disabled={!importText.trim()} style={{ marginTop: 10, backgroundColor: importText.trim() ? C.night : C.rule, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.sansB, color: importText.trim() ? C.gold : C.muted, fontSize: 13, letterSpacing: 1 }}>IMPORT</Text>
+          <TextInput value={importText} onChangeText={setImportText} placeholder="Paste a backup here to restore it" placeholderTextColor={'rgba(255,255,255,0.62)'} multiline
+            style={{ marginTop: 14, backgroundColor: C.night3, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sans, fontSize: 12, color: C.white, minHeight: 70, textAlignVertical: 'top' }} />
+          <Pressable onPress={doImport} disabled={!importText.trim()} style={{ marginTop: 10, backgroundColor: importText.trim() ? C.gold : C.night3, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
+            <Text style={{ fontFamily: F.sansB, color: importText.trim() ? C.night : 'rgba(255,255,255,0.62)', fontSize: 13, letterSpacing: 1 }}>IMPORT</Text>
           </Pressable>
         </Card>
       )}
