@@ -11,6 +11,7 @@ import { ACCENTS, C, EVENT_COLORS, F } from './theme';
 import { LayersApi } from './layers';
 import { ProfileApi } from './profile';
 import { JournalApi, PeopleApi } from './journal';
+import { SkyAlertsApi } from './skyAlerts';
 import { SkyBrief, ZodiacStrip } from './skyScreen';
 import { vedicDay } from './sky';
 
@@ -26,6 +27,7 @@ export type Nav = {
   profile: ProfileApi;
   journal: JournalApi;
   people: PeopleApi;
+  alerts: SkyAlertsApi;
 };
 export type Tab = 'today' | 'month' | 'year' | 'convert' | 'events' | 'sky';
 

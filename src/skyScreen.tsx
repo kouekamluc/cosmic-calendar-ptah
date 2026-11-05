@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { eraYearOf, gfmt, pkShort, pkStr, toPK, ERA_OFFSET } from './engine';
 import { Card, Kicker, NavArrows, Starfield } from './components';
 import { LayerKey, Layers } from './layers';
@@ -7,6 +7,8 @@ import { chineseDay, glyph, seasonsOf, SIGNS, skyDay, sunSpans, upcomingSkyEvent
 import type { Nav } from './screens';
 import { ACCENTS, C, F } from './theme';
 import { MyChart } from './chartScreen';
+import { SkyAlertKey } from './skyAlerts';
+import { ensureReminderPermission } from './reminders';
 import { Insights } from './insightsScreen';
 
 const dim = 'rgba(255,255,255,0.62)';
@@ -117,7 +119,7 @@ function SkyDaily({ nav }: { nav: Nav }) {
             <Kicker style={{ fontSize: 9 }}>Western · tropical zodiac</Kicker>
             <Row k="Sun" v={`${glyph(d.sunSign)} ${SIGNS[d.sunSign].name} ${d.sunDeg}°`} sub={`${SIGNS[d.sunSign].element} · ${SIGNS[d.sunSign].mode}`} />
             <Row k="Moon" v={`${glyph(d.moonSign)} ${SIGNS[d.moonSign].name} ${d.moonDeg}°`} sub={`${Math.round(d.lit * 100)}% illuminated · ${SIGNS[d.moonSign].element}`} />
-            <Row k="Retrograde" v={d.retro.length ? d.retro.map(x => `${x} ℞`).join('  ·  ') : 'None right now'} sub="Mercury, Venus, Mars, Jupiter, Saturn" />
+            <Row k="Retrograde" v={d.retro.length ? d.retro.map(x => `${x} ℞`).join(', ') : 'None right now'} sub="Checked: Mercury to Saturn" />
           </Card>
         )}
         {L.chinese && (
@@ -156,6 +158,22 @@ function SkyDaily({ nav }: { nav: Nav }) {
               <Text style={{ fontFamily: F.sans, color: C.goldLt, fontSize: 12 }}>{pkShort(toPK(e.n))}</Text>
             </Pressable>
           ))}
+        </Card>
+        <Card style={{ backgroundColor: C.night2, marginTop: 12 }}>
+          <Kicker style={{ fontSize: 9 }}>Sky alerts (08:00 notifications)</Kicker>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {([['moons', 'New & full moons'], ['retro', 'Mercury retrograde'], ['eclipses', 'Eclipses']] as [SkyAlertKey, string][]).map(([k, label]) => {
+              const on = nav.alerts.prefs[k];
+              return (
+                <Pressable key={k} onPress={async () => {
+                  if (!on && !(await ensureReminderPermission())) return Alert.alert('Notifications are off', 'Allow notifications for this app in your phone settings to get sky alerts.');
+                  nav.alerts.set(k, !on);
+                }} style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, backgroundColor: on ? C.gold : C.night3, marginRight: 8, marginTop: 10 }}>
+                  <Text style={{ fontFamily: F.sansB, fontSize: 12, color: on ? C.night : dim }}>{on ? '✓ ' : ''}{label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </Card>
         <Text style={{ fontFamily: F.sans, color: 'rgba(255,255,255,0.45)', fontSize: 10.5, marginTop: 14, lineHeight: 15 }}>
           Positions are computed on your phone for 12:00 UTC of each day. Zodiac, almanac and lunar-day meanings are traditions for reflection, not predictions.

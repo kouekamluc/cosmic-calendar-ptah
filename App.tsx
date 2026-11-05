@@ -12,6 +12,7 @@ import { SkyScreen } from './src/skyScreen';
 import { useLayers } from './src/layers';
 import { useProfile } from './src/profile';
 import { useJournal, usePeople } from './src/journal';
+import { useSkyAlerts } from './src/skyAlerts';
 import { ConvertScreen, EventsScreen, MonthScreen, Nav, Tab, TodayScreen, YearScreen } from './src/screens';
 import { Ankh } from './src/components';
 import { initReminders, syncReminders } from './src/reminders';
@@ -86,10 +87,11 @@ function Main() {
   const profile = useProfile();
   const journal = useJournal();
   const people = usePeople();
+  const alerts = useSkyAlerts();
   // keep scheduled reminders in step with the events (and roll the window forward each day)
   useEffect(() => {
-    if (events.ready) syncReminders(events.events, today);
-  }, [events.events, events.ready, today]);
+    if (events.ready && alerts.ready) syncReminders(events.events, today, alerts.prefs);
+  }, [events.events, events.ready, alerts.prefs, alerts.ready, today]);
   useEffect(() => {
     const sub = AppState.addEventListener('change', s => { if (s === 'active') setToday(todayDn()); });
     const iv = setInterval(() => setToday(todayDn()), 60_000);
@@ -103,7 +105,7 @@ function Main() {
     });
     return () => sub.remove();
   }, [tab]);
-  const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events, layers, profile, journal, people };
+  const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events, layers, profile, journal, people, alerts };
   const dark = tab === 'today' || tab === 'sky';
   return (
     <View style={{ flex: 1, backgroundColor: dark ? C.night : C.paper }}>

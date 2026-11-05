@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { gfmt, pkStr, toPK, ymd } from './engine';
 import { PEvent, upcomingOccurrences } from './events';
+import { NO_ALERTS, skyAlertItems, SkyAlertPrefs } from './skyAlerts';
 
 const CHANNEL = 'reminders';
 const REMIND_HOUR = 8;      // reminders fire at 08:00 local time on the day of the event
@@ -36,12 +37,13 @@ export async function ensureReminderPermission(): Promise<boolean> {
 }
 
 /** Replace all scheduled reminders with the next occurrences of every event that has remind on. */
-export async function syncReminders(events: PEvent[], today: number) {
+export async function syncReminders(events: PEvent[], today: number, sky: SkyAlertPrefs = NO_ALERTS) {
   if (!supported) return;
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     const wanted = events.filter(e => e.remind);
-    if (!wanted.length) return;
+    const skyItems = skyAlertItems(today, sky);
+    if (!wanted.length && !skyItems.length) return;
     const perm = await Notifications.getPermissionsAsync();
     if (!perm.granted) return;
     const now = Date.now();
@@ -53,6 +55,11 @@ export async function syncReminders(events: PEvent[], today: number) {
         if (at.getTime() <= now) continue;
         items.push({ at, title: e.title, body: `${pkStr(toPK(n))} · ${gfmt(n, true)}` });
       }
+    }
+    for (const s of skyItems) {
+      const g = ymd(s.n);
+      const at = new Date(g.y, g.m - 1, g.d, REMIND_HOUR, 0, 0);
+      if (at.getTime() > now) items.push({ at, title: s.title, body: s.body });
     }
     items.sort((a, b) => a.at.getTime() - b.at.getTime());
     for (const it of items.slice(0, MAX_SCHEDULED)) {
