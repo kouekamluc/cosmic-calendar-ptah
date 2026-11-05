@@ -46,3 +46,7 @@ build_log.txt
 # secrets / build logs
 expo_token.txt
 build_log.txt
+
+# Expo prebuild output (generated)
+/android
+/ios
