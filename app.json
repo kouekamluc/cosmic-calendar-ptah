@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Ptah Kamgou",
+    "slug": "ptah-kamgou-calendar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kkevolabs.ptahkamgou"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F1230",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.kkevolabs.ptahkamgou"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "backgroundColor": "#0F1230",
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0F1230"
+        }
+      ]
+    ]
+  }
+}
