@@ -90,7 +90,7 @@ function retroYear(ey: number): RetroYear {
 const STEMS = '甲乙丙丁戊己庚辛壬癸', BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
 const STEM_PY = ['Jia', 'Yi', 'Bing', 'Ding', 'Wu', 'Ji', 'Geng', 'Xin', 'Ren', 'Gui'];
 const BRANCH_PY = ['Zi', 'Chou', 'Yin', 'Mao', 'Chen', 'Si', 'Wu', 'Wei', 'Shen', 'You', 'Xu', 'Hai'];
-const ANIMALS = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig'];
+export const ANIMAL_LIST = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig'];
 const ELEMENTS = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
 const XIU: [string, string, string][] = [
   ['角', 'Horn', 'Jiao'], ['亢', 'Neck', 'Kang'], ['氐', 'Root', 'Di'], ['房', 'Room', 'Fang'], ['心', 'Heart', 'Xin'],
@@ -129,7 +129,7 @@ export function chineseDay(n: number): ChineseDay {
   const lm: number = l.getMonth();
   const out: ChineseDay = {
     lunarMonth: Math.abs(lm), lunarDay: l.getDay(), leap: lm < 0,
-    animal: ANIMALS[bi], element: ELEMENTS[si >> 1], polarity: si % 2 === 0 ? 'Yang' : 'Yin',
+    animal: ANIMAL_LIST[bi], element: ELEMENTS[si >> 1], polarity: si % 2 === 0 ? 'Yang' : 'Yin',
     yearPillar: `${STEM_PY[si]}-${BRANCH_PY[bi]}`,
     dayPillar: `${STEM_PY[dsi]}-${BRANCH_PY[dbi]}`,
     officer: off[0], officerPy: off[1],
@@ -259,4 +259,32 @@ export function sunSpans(start: number, len: number) {
     else spans.push({ sign: s, from: i, days: 1 });
   }
   return spans;
+}
+
+/** Ecliptic longitudes of all ten bodies at noon UTC of a day (keys match chart.ts). */
+const plCache = new Map<number, Record<string, number>>();
+export function planetLons(n: number): Record<string, number> {
+  const hit = plCache.get(n);
+  if (hit) return hit;
+  const d = skyDay(n), t = noon(n);
+  const out: Record<string, number> = { sun: d.sunLon, moon: d.moonLon };
+  const bodies: [string, A.Body][] = [['mercury', A.Body.Mercury], ['venus', A.Body.Venus], ['mars', A.Body.Mars], ['jupiter', A.Body.Jupiter],
+    ['saturn', A.Body.Saturn], ['uranus', A.Body.Uranus], ['neptune', A.Body.Neptune], ['pluto', A.Body.Pluto]];
+  for (const [k, b] of bodies) out[k] = A.Ecliptic(A.GeoVector(b, t, true)).elon;
+  plCache.set(n, out);
+  return out;
+}
+
+/** Next day (after n) with a new or full moon. */
+export function nextMoonOf(n: number, phase: 'new' | 'full'): number {
+  for (let ey = eraYearOf(n); ; ey++) {
+    const ks = [...moonsFor(ey).entries()].filter(([k, v]) => k > n && v === phase).map(([k]) => k).sort((a, b) => a - b);
+    if (ks.length) return ks[0];
+  }
+}
+export function prevMoonOf(n: number, phase: 'new' | 'full'): number {
+  for (let ey = eraYearOf(n); ; ey--) {
+    const ks = [...moonsFor(ey).entries()].filter(([k, v]) => k <= n && v === phase).map(([k]) => k).sort((a, b) => b - a);
+    if (ks.length) return ks[0];
+  }
 }

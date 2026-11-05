@@ -82,7 +82,7 @@ function ChartWheel({ chart, size }: { chart: Chart; size: number }) {
 }
 
 // ------------------------------------------------------------------ form
-function Input({ label, value, onChange, w, ph, numeric = true }: { label: string; value: string; onChange: (s: string) => void; w?: number; ph?: string; numeric?: boolean }) {
+export function Input({ label, value, onChange, w, ph, numeric = true }: { label: string; value: string; onChange: (s: string) => void; w?: number; ph?: string; numeric?: boolean }) {
   return (
     <View style={{ marginRight: 10, marginTop: 10, width: w }}>
       <Text style={{ fontFamily: F.sansB, color: C.goldLt, fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase' }}>{label}</Text>
@@ -92,7 +92,7 @@ function Input({ label, value, onChange, w, ph, numeric = true }: { label: strin
     </View>
   );
 }
-const Chip = ({ on, label, f }: { on: boolean; label: string; f: () => void }) => (
+export const Chip = ({ on, label, f }: { on: boolean; label: string; f: () => void }) => (
   <Pressable onPress={f} style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, backgroundColor: on ? C.gold : C.night3, marginRight: 8, marginTop: 8 }}>
     <Text style={{ fontFamily: F.sansB, fontSize: 12, color: on ? C.night : dim }}>{label}</Text>
   </Pressable>

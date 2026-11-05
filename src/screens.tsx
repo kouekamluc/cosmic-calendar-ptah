@@ -10,6 +10,7 @@ import { Ankh, Card, CountryTag, Kicker, MoonIcon, NavArrows, NdopBand, Sparkle,
 import { ACCENTS, C, EVENT_COLORS, F } from './theme';
 import { LayersApi } from './layers';
 import { ProfileApi } from './profile';
+import { JournalApi, PeopleApi } from './journal';
 import { SkyBrief, ZodiacStrip } from './skyScreen';
 import { vedicDay } from './sky';
 
@@ -23,6 +24,8 @@ export type Nav = {
   events: EventsApi;
   layers: LayersApi;
   profile: ProfileApi;
+  journal: JournalApi;
+  people: PeopleApi;
 };
 export type Tab = 'today' | 'month' | 'year' | 'convert' | 'events' | 'sky';
 

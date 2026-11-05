@@ -7,6 +7,7 @@ import { chineseDay, glyph, seasonsOf, SIGNS, skyDay, sunSpans, upcomingSkyEvent
 import type { Nav } from './screens';
 import { ACCENTS, C, F } from './theme';
 import { MyChart } from './chartScreen';
+import { Insights } from './insightsScreen';
 
 const dim = 'rgba(255,255,255,0.62)';
 
@@ -165,17 +166,17 @@ function SkyDaily({ nav }: { nav: Nav }) {
 }
 
 export function SkyScreen({ nav }: { nav: Nav }) {
-  const [mode, setMode] = useState<'sky' | 'me'>('sky');
+  const [mode, setMode] = useState<'sky' | 'me' | 'ins'>('sky');
   return (
     <View style={{ flex: 1, backgroundColor: C.night }}>
       <View style={{ flexDirection: 'row', marginHorizontal: 20, marginTop: 12, backgroundColor: C.night2, borderRadius: 18, padding: 3 }}>
-        {([['sky', "Today's sky"], ['me', 'My chart']] as const).map(([k, label]) => (
+        {([['sky', 'Sky'], ['me', 'My chart'], ['ins', 'Insights']] as const).map(([k, label]) => (
           <Pressable key={k} onPress={() => setMode(k)} style={{ flex: 1, paddingVertical: 8, borderRadius: 15, alignItems: 'center', backgroundColor: mode === k ? C.gold : 'transparent' }}>
             <Text style={{ fontFamily: F.sansB, fontSize: 12, color: mode === k ? C.night : dim }}>{label}</Text>
           </Pressable>
         ))}
       </View>
-      {mode === 'sky' ? <SkyDaily nav={nav} /> : <MyChart nav={nav} />}
+      {mode === 'sky' ? <SkyDaily nav={nav} /> : mode === 'me' ? <MyChart nav={nav} /> : <Insights nav={nav} />}
     </View>
   );
 }

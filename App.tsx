@@ -11,6 +11,7 @@ import { useEvents } from './src/events';
 import { SkyScreen } from './src/skyScreen';
 import { useLayers } from './src/layers';
 import { useProfile } from './src/profile';
+import { useJournal, usePeople } from './src/journal';
 import { ConvertScreen, EventsScreen, MonthScreen, Nav, Tab, TodayScreen, YearScreen } from './src/screens';
 import { Ankh } from './src/components';
 import { initReminders, syncReminders } from './src/reminders';
@@ -83,6 +84,8 @@ function Main() {
   const events = useEvents();
   const layers = useLayers();
   const profile = useProfile();
+  const journal = useJournal();
+  const people = usePeople();
   // keep scheduled reminders in step with the events (and roll the window forward each day)
   useEffect(() => {
     if (events.ready) syncReminders(events.events, today);
@@ -100,7 +103,7 @@ function Main() {
     });
     return () => sub.remove();
   }, [tab]);
-  const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events, layers, profile };
+  const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events, layers, profile, journal, people };
   const dark = tab === 'today' || tab === 'sky';
   return (
     <View style={{ flex: 1, backgroundColor: dark ? C.night : C.paper }}>
