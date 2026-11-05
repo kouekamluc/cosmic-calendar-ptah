@@ -8,6 +8,9 @@ import { EventsApi, PEvent, Repeat, nextOccurrence } from './events';
 import { ensureReminderPermission } from './reminders';
 import { Ankh, Card, CountryTag, Kicker, MoonIcon, NavArrows, NdopBand, Sparkle, Starfield, YearWheel } from './components';
 import { ACCENTS, C, EVENT_COLORS, F } from './theme';
+import { LayersApi } from './layers';
+import { SkyBrief, ZodiacStrip } from './skyScreen';
+import { vedicDay } from './sky';
 
 export type Nav = {
   today: number;
@@ -17,8 +20,9 @@ export type Nav = {
   setView: (v: { ey: number; month: number }) => void;
   go: (tab: Tab) => void;
   events: EventsApi;
+  layers: LayersApi;
 };
-export type Tab = 'today' | 'month' | 'year' | 'convert' | 'events';
+export type Tab = 'today' | 'month' | 'year' | 'convert' | 'events' | 'sky';
 
 const T = StyleSheet.create({
   h1: { fontFamily: F.displayB, color: C.ink, fontSize: 26 },
@@ -107,6 +111,15 @@ export function TodayScreen({ nav }: { nav: Nav }) {
           </Card>
         </View>
 
+        <Pressable onPress={() => { nav.setSelected(t); nav.go('sky'); }}>
+          <Card style={{ backgroundColor: C.night2, marginTop: 12 }}>
+            <Kicker style={{ fontSize: 9 }}>Sky today</Kicker>
+            <SkyBrief n={t} layers={nav.layers.layers} />
+            {nav.layers.layers.vedic && <Text style={{ fontFamily: F.sans, color: 'rgba(255,255,255,0.62)', fontSize: 12, marginTop: 4 }}>{vedicDay(t).paksha} {vedicDay(t).tithiName} · {vedicDay(t).nakshatra}</Text>}
+            <Text style={{ fontFamily: F.sansB, color: C.gold, fontSize: 12, marginTop: 8 }}>Open the sky ›</Text>
+          </Card>
+        </Pressable>
+
         <Card style={{ backgroundColor: C.night2, marginTop: 12 }}>
           <Kicker style={{ fontSize: 9 }}>Coming holidays</Kicker>
           {upcoming.map((h, i) => (
@@ -194,6 +207,7 @@ function DayDetail({ n, nav }: { n: number; nav: Nav }) {
           <Text style={[T.body, { marginLeft: 8 }]}>{PHASE_NAME[moon]}</Text>
         </View>
       )}
+      <SkyBrief n={n} layers={nav.layers.layers} dark={false} />
       {hol.map((h, i) => (
         <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
           <CountryTag who={h.who} />
@@ -276,6 +290,7 @@ export function MonthScreen({ nav }: { nav: Nav }) {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
           {cells.map(c => <DayCell key={c.n} n={c.n} label={c.label} w={cw} h={ch} nav={nav} />)}
         </View>
+        {month <= 13 && nav.layers.layers.western && <ZodiacStrip start={start} width={cw * 7} />}
         <DayDetail n={nav.selected} nav={nav} />
         <Text style={[T.small, { marginTop: 12, fontSize: 10.5 }]}>Swipe to change month · small number = Gregorian day · gold dot = holiday · * Eid estimated</Text>
       </View>

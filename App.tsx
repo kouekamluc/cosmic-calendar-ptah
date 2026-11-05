@@ -8,6 +8,8 @@ import { DMSans_300Light, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } 
 import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { toPK, todayDn } from './src/engine';
 import { useEvents } from './src/events';
+import { SkyScreen } from './src/skyScreen';
+import { useLayers } from './src/layers';
 import { ConvertScreen, EventsScreen, MonthScreen, Nav, Tab, TodayScreen, YearScreen } from './src/screens';
 import { Ankh } from './src/components';
 import { initReminders, syncReminders } from './src/reminders';
@@ -39,6 +41,16 @@ function TabIcon({ tab, color }: { tab: Tab; color: string }) {
           })}
         </Svg>
       );
+    case 'sky':
+      return (
+        <Svg width={s} height={s}>
+          <Circle cx={11} cy={11} r={4} stroke={color} strokeWidth={sw} fill="none" />
+          {Array.from({ length: 8 }, (_, i) => {
+            const a = (i * Math.PI) / 4;
+            return <Line key={i} x1={11 + 6.5 * Math.cos(a)} y1={11 + 6.5 * Math.sin(a)} x2={11 + 9 * Math.cos(a)} y2={11 + 9 * Math.sin(a)} stroke={color} strokeWidth={sw} strokeLinecap="round" />;
+          })}
+        </Svg>
+      );
     case 'convert':
       return (
         <Svg width={s} height={s}>
@@ -56,7 +68,7 @@ function TabIcon({ tab, color }: { tab: Tab; color: string }) {
 }
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'today', label: 'Today' }, { key: 'month', label: 'Month' }, { key: 'year', label: 'Year' },
+  { key: 'today', label: 'Today' }, { key: 'month', label: 'Month' }, { key: 'sky', label: 'Sky' }, { key: 'year', label: 'Year' },
   { key: 'convert', label: 'Convert' }, { key: 'events', label: 'Events' },
 ];
 
@@ -68,6 +80,7 @@ function Main() {
   const [selected, setSelected] = useState(today);
   const [view, setView] = useState({ ey: p0.year, month: p0.kind === 'day' ? p0.month : 13 });
   const events = useEvents();
+  const layers = useLayers();
   // keep scheduled reminders in step with the events (and roll the window forward each day)
   useEffect(() => {
     if (events.ready) syncReminders(events.events, today);
@@ -85,8 +98,8 @@ function Main() {
     });
     return () => sub.remove();
   }, [tab]);
-  const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events };
-  const dark = tab === 'today';
+  const nav: Nav = { today, selected, setSelected, view, setView, go: setTab, events, layers };
+  const dark = tab === 'today' || tab === 'sky';
   return (
     <View style={{ flex: 1, backgroundColor: dark ? C.night : C.paper }}>
       <StatusBar style={dark || tab === 'month' ? 'light' : 'dark'} />
@@ -94,6 +107,7 @@ function Main() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {tab === 'today' && <TodayScreen nav={nav} />}
         {tab === 'month' && <MonthScreen nav={nav} />}
+        {tab === 'sky' && <SkyScreen nav={nav} />}
         {tab === 'year' && <YearScreen nav={nav} />}
         {tab === 'convert' && <ConvertScreen nav={nav} />}
         {tab === 'events' && <EventsScreen nav={nav} />}
