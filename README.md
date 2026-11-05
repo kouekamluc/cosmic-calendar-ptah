@@ -14,4 +14,7 @@ Italy + Cameroon holidays, converter, personal events (stored on the phone).
 ## Try it instantly (optional)
 `npx expo start` then scan the QR code with the Expo Go app.
 
-Code: `src/engine.ts` (calendar rules), `src/screens.tsx` (UI), `App.tsx` (tabs).
+Events can be edited, set to repeat yearly (Ptah Kamgou or Gregorian date), given an 08:00 reminder
+(local notification, works offline), and backed up/restored as text from the Events tab.
+
+Code: `src/reminders.ts` (notifications), `src/events.ts` (event storage), `src/engine.ts` (calendar rules), `src/screens.tsx` (UI), `App.tsx` (tabs).

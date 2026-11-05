@@ -10,7 +10,10 @@ import { toPK, todayDn } from './src/engine';
 import { useEvents } from './src/events';
 import { ConvertScreen, EventsScreen, MonthScreen, Nav, Tab, TodayScreen, YearScreen } from './src/screens';
 import { Ankh } from './src/components';
+import { initReminders, syncReminders } from './src/reminders';
 import { C, F } from './src/theme';
+
+initReminders();
 
 function TabIcon({ tab, color }: { tab: Tab; color: string }) {
   const s = 22, sw = 1.7;
@@ -65,6 +68,10 @@ function Main() {
   const [selected, setSelected] = useState(today);
   const [view, setView] = useState({ ey: p0.year, month: p0.kind === 'day' ? p0.month : 13 });
   const events = useEvents();
+  // keep scheduled reminders in step with the events (and roll the window forward each day)
+  useEffect(() => {
+    if (events.ready) syncReminders(events.events, today);
+  }, [events.events, events.ready, today]);
   useEffect(() => {
     const sub = AppState.addEventListener('change', s => { if (s === 'active') setToday(todayDn()); });
     const iv = setInterval(() => setToday(todayDn()), 60_000);

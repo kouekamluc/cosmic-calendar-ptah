@@ -1,10 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { PanResponder, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Alert, PanResponder, Pressable, ScrollView, StyleSheet, Text, Share, TextInput, useWindowDimensions, View } from 'react-native';
 import {
   dn, eraYearOf, fromPK, gfmt, holidaysFor, MONTHS, monthStart, moonsFor, nextPhaseAfter, PHASE_NAME, pkShort, pkStr,
   toPK, ymd, WEEKDAYS, yearEnd, yearHasLeap, yearLength, yearStart, ERA_OFFSET,
 } from './engine';
-import { EventsApi, PEvent, Repeat, occursOn } from './events';
+import { EventsApi, PEvent, Repeat, nextOccurrence } from './events';
+import { ensureReminderPermission } from './reminders';
 import { Ankh, Card, CountryTag, Kicker, MoonIcon, NavArrows, NdopBand, Sparkle, Starfield, YearWheel } from './components';
 import { ACCENTS, C, EVENT_COLORS, F } from './theme';
 
@@ -349,18 +350,19 @@ export function ConvertScreen({ nav }: { nav: Nav }) {
 
   let gRes: { n: number } | null = null;
   const y = +gy, m = +gm, d = +gd;
-  if (y > 0 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+  // years 0-99 are remapped to 1900s by Date.UTC, so the converter supports 100-9999
+  if (Number.isInteger(y) && Number.isInteger(m) && Number.isInteger(d) && y >= 100 && y <= 9999 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
     const n = dn(y, m, d);
     if (ymd(n).d === d) gRes = { n };
   }
   let pRes: number | null = null, pErr = '';
   const Y = +py;
-  if (Y > ERA_OFFSET) {
+  if (Number.isInteger(Y) && Y >= ERA_OFFSET + 100 && Y <= ERA_OFFSET + 9998) {
     if (special === 'renewal') pRes = yearEnd(Y);
     else if (special === 'leap') { if (yearHasLeap(Y)) pRes = yearEnd(Y) - 1; else pErr = `Year ${Y} has no Leap Day`; }
-    else if (+pd >= 1 && +pd <= 28) pRes = fromPK(Y, pm, +pd);
+    else if (Number.isInteger(+pd) && +pd >= 1 && +pd <= 28) pRes = fromPK(Y, pm, +pd);
     else pErr = 'Day must be 1–28';
-  }
+  } else if (py.trim()) pErr = `Year must be ${ERA_OFFSET + 100}–${ERA_OFFSET + 9998}`;
   const open = (n: number) => { const p = toPK(n); nav.setView({ ey: p.year, month: p.kind === 'day' ? p.month : 13 }); nav.setSelected(n); nav.go('month'); };
   const Result = ({ big, sub, n }: { big: string; sub: string; n: number }) => (
     <Pressable onPress={() => open(n)} style={{ backgroundColor: C.night, borderRadius: 12, padding: 14, marginTop: 14 }}>
@@ -409,24 +411,48 @@ export function ConvertScreen({ nav }: { nav: Nav }) {
 }
 
 // ======================================================================== EVENTS
-function nextOccurrence(e: PEvent, from: number) {
-  if (e.repeat === 'none') return e.date >= from ? e.date : null;
-  for (let k = 0; k < 800; k++) if (occursOn(e, from + k)) return from + k;
-  return null;
-}
-
 export function EventsScreen({ nav }: { nav: Nav }) {
   const [title, setTitle] = useState('');
   const [repeat, setRepeat] = useState<Repeat>('none');
   const [color, setColor] = useState(EVENT_COLORS[0]);
+  const [remind, setRemind] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [backupOpen, setBackupOpen] = useState(false);
+  const [importText, setImportText] = useState('');
   const date = nav.selected;
   const list = nav.events.events
     .map(e => ({ e, next: nextOccurrence(e, nav.today) }))
     .sort((a, b) => (a.next ?? 1e9) - (b.next ?? 1e9));
+
+  const reset = () => { setTitle(''); setRepeat('none'); setColor(EVENT_COLORS[0]); setRemind(false); setEditing(null); };
   const submit = () => {
     if (!title.trim()) return;
-    nav.events.add({ title: title.trim(), date, repeat, color });
-    setTitle('');
+    const data = { title: title.trim(), date, repeat, color, remind };
+    if (editing) nav.events.update(editing, data); else nav.events.add(data);
+    reset();
+  };
+  const startEdit = (e: PEvent) => {
+    setEditing(e.id); setTitle(e.title); setRepeat(e.repeat); setColor(e.color); setRemind(!!e.remind);
+    nav.setSelected(e.date);
+  };
+  const toggleRemind = async () => {
+    if (remind) { setRemind(false); return; }
+    if (await ensureReminderPermission()) setRemind(true);
+    else Alert.alert('Reminders are off', 'Allow notifications for Ptah Kamgou in your phone settings to get event reminders.');
+  };
+  const confirmDelete = (e: PEvent) =>
+    Alert.alert('Delete event?', e.title, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => { if (editing === e.id) reset(); nav.events.remove(e.id); } },
+    ]);
+  const doExport = async () => {
+    try { await Share.share({ message: nav.events.exportJson(), title: 'Ptah Kamgou events backup' }); } catch { /* cancelled */ }
+  };
+  const doImport = () => {
+    const n = nav.events.importJson(importText);
+    if (n < 0) Alert.alert('Could not read it', 'Paste the full backup text you exported earlier.');
+    else if (n === 0) Alert.alert('Nothing to import', 'No events were found in that text.');
+    else { Alert.alert('Imported', `${n} event${n === 1 ? '' : 's'} found; ones you already have were skipped.`); setImportText(''); setBackupOpen(false); }
   };
   const chip = (on: boolean, label: string, f: () => void) => (
     <Pressable key={label} onPress={f} style={{ paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14, backgroundColor: on ? C.night : C.paper, marginRight: 6, marginTop: 6 }}>
@@ -438,8 +464,8 @@ export function EventsScreen({ nav }: { nav: Nav }) {
       <Kicker>Your events</Kicker>
       <Text style={[T.h1, { marginTop: 4, marginBottom: 14 }]}>Plan your year</Text>
       <Card>
-        <Text style={[T.label, { color: C.ink }]}>New event</Text>
-        <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Digital electronics exam" placeholderTextColor={C.muted} onSubmitEditing={submit}
+        <Text style={[T.label, { color: C.ink }]}>{editing ? 'Edit event' : 'New event'}</Text>
+        <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Digital electronics exam" placeholderTextColor={C.muted} onSubmitEditing={submit} maxLength={120}
           style={{ marginTop: 10, backgroundColor: C.paper, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sansM, fontSize: 15, color: C.ink }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
           <Pressable onPress={() => nav.setSelected(date - 1)} hitSlop={8} style={{ padding: 6 }}><Text style={{ fontSize: 20, color: C.ink }}>‹</Text></Pressable>
@@ -455,33 +481,61 @@ export function EventsScreen({ nav }: { nav: Nav }) {
           {chip(repeat === 'pk', 'Yearly (Ptah Kamgou)', () => setRepeat('pk'))}
           {chip(repeat === 'greg', 'Yearly (Gregorian)', () => setRepeat('greg'))}
         </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {chip(remind, remind ? '🔔 Reminder at 08:00' : '🔕 No reminder', toggleRemind)}
+        </View>
         <View style={{ flexDirection: 'row', marginTop: 12, gap: 10 }}>
           {EVENT_COLORS.map(c => (
             <Pressable key={c} onPress={() => setColor(c)} style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c, borderWidth: color === c ? 3 : 0, borderColor: C.night }} />
           ))}
         </View>
-        <Pressable onPress={submit} style={({ pressed }) => ({ marginTop: 16, backgroundColor: title.trim() ? C.night : C.rule, borderRadius: 10, paddingVertical: 12, alignItems: 'center', opacity: pressed ? 0.7 : 1 })}>
-          <Text style={{ fontFamily: F.sansB, color: title.trim() ? C.gold : C.muted, fontSize: 14, letterSpacing: 1 }}>SAVE EVENT</Text>
+        <Pressable onPress={submit} style={({ pressed }) => ({ marginTop: 16, backgroundColor: title.trim() ? C.night : C.rule, borderRadius: 10, paddingVertical: 12, alignItems: 'center', opacity: pressed ? 0.8 : 1 })}>
+          <Text style={{ fontFamily: F.sansB, color: title.trim() ? C.gold : C.muted, fontSize: 14, letterSpacing: 1 }}>{editing ? 'UPDATE EVENT' : 'SAVE EVENT'}</Text>
         </Pressable>
+        {editing && (
+          <Pressable onPress={reset} style={{ marginTop: 10, alignItems: 'center' }}>
+            <Text style={[T.small, { fontFamily: F.sansB }]}>Cancel editing</Text>
+          </Pressable>
+        )}
       </Card>
       <Text style={[T.label, { marginTop: 22, marginBottom: 8 }]}>Upcoming</Text>
       {list.length === 0 && <Text style={T.small}>No events yet. Exams, work shifts, birthdays — add them above.</Text>}
       {list.map(({ e, next }) => (
-        <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.card, borderRadius: 12, padding: 12, marginBottom: 8, opacity: next === null ? 0.5 : 1 }}>
+        <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.card, borderRadius: 12, padding: 12, marginBottom: 8, opacity: next === null ? 0.5 : 1, borderWidth: editing === e.id ? 2 : 0, borderColor: C.gold }}>
           <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: e.color, marginRight: 12 }} />
-          <Pressable style={{ flex: 1 }} onPress={() => { if (next !== null) { const p = toPK(next); nav.setView({ ey: p.year, month: p.kind === 'day' ? p.month : 13 }); nav.setSelected(next); nav.go('month'); } }}>
-            <Text style={{ fontFamily: F.sansB, fontSize: 15, color: C.ink }}>{e.title}</Text>
+          <Pressable style={{ flex: 1 }} onPress={() => { const d = next ?? e.date; const p = toPK(d); nav.setView({ ey: p.year, month: p.kind === 'day' ? p.month : 13 }); nav.setSelected(d); nav.go('month'); }}>
+            <Text style={{ fontFamily: F.sansB, fontSize: 15, color: C.ink }}>{e.title}{e.remind ? '  🔔' : ''}</Text>
             <Text style={T.small}>
               {next === null ? `passed · ${pkStr(toPK(e.date))}` : `${pkStr(toPK(next))} · ${gfmt(next, true)}`}
               {e.repeat !== 'none' ? '  ↻' : ''}
               {next !== null && next - nav.today <= 30 ? `  ·  ${next === nav.today ? 'today' : `in ${next - nav.today}d`}` : ''}
             </Text>
           </Pressable>
-          <Pressable onPress={() => nav.events.remove(e.id)} hitSlop={10} style={{ padding: 6 }}>
+          <Pressable onPress={() => startEdit(e)} hitSlop={10} style={{ padding: 6 }}>
+            <Text style={{ color: C.muted, fontSize: 15 }}>✎</Text>
+          </Pressable>
+          <Pressable onPress={() => confirmDelete(e)} hitSlop={10} style={{ padding: 6 }}>
             <Text style={{ color: C.muted, fontSize: 16 }}>✕</Text>
           </Pressable>
         </View>
       ))}
+
+      <Pressable onPress={() => setBackupOpen(o => !o)} style={{ marginTop: 22, flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={T.label}>Backup & restore {backupOpen ? '▾' : '▸'}</Text>
+      </Pressable>
+      {backupOpen && (
+        <Card style={{ marginTop: 8 }}>
+          <Text style={T.small}>Your events live only on this phone. Export them as text and save it (WhatsApp to yourself, notes, email) to keep a copy.</Text>
+          <Pressable onPress={doExport} disabled={!nav.events.events.length} style={{ marginTop: 12, backgroundColor: nav.events.events.length ? C.night : C.rule, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
+            <Text style={{ fontFamily: F.sansB, color: nav.events.events.length ? C.gold : C.muted, fontSize: 13, letterSpacing: 1 }}>EXPORT {nav.events.events.length} EVENT{nav.events.events.length === 1 ? '' : 'S'}</Text>
+          </Pressable>
+          <TextInput value={importText} onChangeText={setImportText} placeholder="Paste a backup here to restore it" placeholderTextColor={C.muted} multiline
+            style={{ marginTop: 14, backgroundColor: C.paper, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.sans, fontSize: 12, color: C.ink, minHeight: 70, textAlignVertical: 'top' }} />
+          <Pressable onPress={doImport} disabled={!importText.trim()} style={{ marginTop: 10, backgroundColor: importText.trim() ? C.night : C.rule, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
+            <Text style={{ fontFamily: F.sansB, color: importText.trim() ? C.gold : C.muted, fontSize: 13, letterSpacing: 1 }}>IMPORT</Text>
+          </Pressable>
+        </Card>
+      )}
     </ScrollView>
   );
 }
