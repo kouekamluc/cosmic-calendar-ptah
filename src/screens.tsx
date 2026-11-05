@@ -12,6 +12,7 @@ import { LayersApi } from './layers';
 import { ProfileApi } from './profile';
 import { JournalApi, PeopleApi } from './journal';
 import { SkyAlertsApi } from './skyAlerts';
+import { DateCard, ShareModal } from './shareCards';
 import { SkyBrief, ZodiacStrip } from './skyScreen';
 import { vedicDay } from './sky';
 
@@ -46,6 +47,7 @@ function accentOf(n: number) {
 // ======================================================================== TODAY
 export function TodayScreen({ nav }: { nav: Nav }) {
   const { width } = useWindowDimensions();
+  const [shareOpen, setShareOpen] = useState(false);
   const t = nav.today, p = toPK(t), ey = p.year;
   const idx = t - yearStart(ey), len = yearLength(ey);
   const g = ymd(t);
@@ -66,7 +68,13 @@ export function TodayScreen({ nav }: { nav: Nav }) {
     <ScrollView style={{ flex: 1, backgroundColor: C.night }} contentContainerStyle={{ paddingBottom: 24 }}>
       <View style={{ paddingHorizontal: 24, paddingTop: 28 }}>
         <Starfield w={width} h={900} n={140} seed={ey} />
-        <Kicker>Today · Aquarian Era</Kicker>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Kicker>Today · Aquarian Era</Kicker>
+          <Pressable onPress={() => setShareOpen(true)} hitSlop={8} style={{ backgroundColor: C.night3, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 6 }}>
+            <Text style={{ fontFamily: F.sansB, color: C.gold, fontSize: 12 }}>Share</Text>
+          </Pressable>
+        </View>
+        <ShareModal visible={shareOpen} onClose={() => setShareOpen(false)}><DateCard n={t} /></ShareModal>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: 14 }}>
           {p.kind === 'day' ? (
             <>

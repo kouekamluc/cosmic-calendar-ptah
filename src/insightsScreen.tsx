@@ -7,6 +7,7 @@ import { dn, gfmt, pkShort, pkStr, toPK, ymd } from './engine';
 import { compatibility, dailyReading, transitsToNatal } from './insights';
 import { JournalKind } from './journal';
 import { nextMoonOf, prevMoonOf } from './sky';
+import { CompatCard, ShareModal } from './shareCards';
 import type { Nav } from './screens';
 import { C, F } from './theme';
 
@@ -142,6 +143,7 @@ function Compatibility({ nav }: { nav: Nav }) {
   const { people, remove } = nav.people;
   const [adding, setAdding] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
   const person = people.find(p => p.id === sel) ?? null;
   const result = useMemo(() => {
     if (!me || !person) return null;
@@ -172,6 +174,10 @@ function Compatibility({ nav }: { nav: Nav }) {
                 </View>
               ))}
               {person.birth.hour === null && <Text style={{ fontFamily: F.sans, color: dim, fontSize: 11, marginTop: 12 }}>{person.name}'s birth time is unknown, so their Moon is approximate.</Text>}
+              <ShareModal visible={sharing} onClose={() => setSharing(false)}><CompatCard a={me.name || 'Me'} b={person.name} result={result} /></ShareModal>
+              <Pressable onPress={() => setSharing(true)} style={{ marginTop: 14, backgroundColor: C.gold, borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}>
+                <Text style={{ fontFamily: F.sansB, color: C.night, fontSize: 12, letterSpacing: 1 }}>SHARE AS IMAGE</Text>
+              </Pressable>
               <Pressable onPress={() => Alert.alert(`Remove ${person.name}?`, undefined, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { remove(person.id); setSel(null); } }])} style={{ marginTop: 14 }}>
                 <Text style={{ fontFamily: F.sansB, color: '#E0705A', fontSize: 12 }}>Remove {person.name}</Text>
               </Pressable>

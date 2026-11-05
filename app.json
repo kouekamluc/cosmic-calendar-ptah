@@ -25,7 +25,13 @@
     },
     "backgroundColor": "#0F1230",
     "plugins": [
-      ["expo-notifications", { "defaultChannel": "reminders", "enableRemoteNotifications": false }],
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "reminders",
+          "enableRemoteNotifications": false
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -33,7 +39,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#0F1230"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "extra": {
       "eas": {
